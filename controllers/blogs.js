@@ -55,9 +55,17 @@ router.post('/', tokenExtractor, async (req, res, next) => {
   }
 })
 
-router.delete('/:id', blogFinder, async (req, res) => {
-  await req.blog.destroy()
-  res.status(204).end()
+router.delete('/:id', blogFinder, tokenExtractor, async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.decodedToken.id)
+    if (req.blog.userId !== user.id) {
+      return res.status(403).send({ error: 'you don\'t have permission to do that' })
+    }
+    await req.blog.destroy()
+    res.status(204).end()
+  } catch (error) {
+    next(error)
+  }
 })
 
 router.put('/:id', blogFinder, async (req, res, next) => {
