@@ -58,7 +58,8 @@ router.get('/', async (req, res) => {
       model: User,
       attributes: { exclude: ['id', 'createdAt', 'updatedAt'] }
     },
-    where
+    where,
+    order: [ ['likes', 'DESC'] ]
   })
 
   res.json(blogs)
