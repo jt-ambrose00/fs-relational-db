@@ -5,8 +5,8 @@ User.hasMany(Blog)
 Blog.belongsTo(User)
 
 const syncDatabase = async () => {
-  await Blog.sync({ alter: true })
   await User.sync({ alter: true })
+  await Blog.sync({ alter: true })
 }
 
 module.exports = {
