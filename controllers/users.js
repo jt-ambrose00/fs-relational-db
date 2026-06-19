@@ -1,4 +1,5 @@
 const router = require('express').Router()
+const bcrypt = require('bcrypt')
 
 const { User, Blog } = require('../models')
 
@@ -19,6 +20,7 @@ const errorHandler = (error, req, res, next) => {
 
 router.get('/', async (req, res) => {
   const users = await User.findAll({
+    attributes: { exclude: ['passwordHash'] },
     include: {
       model: Blog,
       attributes: { exclude: ['userId'] }
@@ -29,8 +31,15 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const user = await User.create(req.body)
-    res.json(user)
+    const { username, name, password } = req.body
+    const passwordHash = await bcrypt.hash(password, 10)
+    const user = await User.create({ username, name, passwordHash })
+    res.json({
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      createdAt: user.createdAt
+    })
   } catch (error) {
     next(error)
   }
