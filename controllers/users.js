@@ -52,7 +52,13 @@ router.put('/:username', async (req, res, next) => {
     })
     user.name = req.body.name
     await user.save()
-    res.json(user)
+    res.json({
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    })
   } catch (error) {
     next(error)
   }
