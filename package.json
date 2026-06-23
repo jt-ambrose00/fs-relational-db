@@ -7,7 +7,8 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "test": "TESTING=true node --test --test-concurrency=1 tests/api_ch3.test.js",
-    "start:test": "TESTING=true node index.js"
+    "start:test": "TESTING=true node index.js",
+    "migration:down": "node util/rollback.js"
   },
   "repository": {
     "type": "git",
