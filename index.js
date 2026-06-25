@@ -9,6 +9,7 @@ const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const authorsRouter = require('./controllers/authors')
 const testsRouter = require('./controllers/tests')
+const readingLists = require('./controllers/readingLists')
 
 app.use(express.json())
 
@@ -17,6 +18,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/authors', authorsRouter)
 app.use('/', testsRouter)
+app.use('/api/readinglists', readingLists)
 
 const start = async () => {
   await connectToDatabase()
