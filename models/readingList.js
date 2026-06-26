@@ -9,9 +9,9 @@ ReadingList.init({
     primaryKey: true,
     autoIncrement: true
   },
-  unread: {
+  read: {
     type: DataTypes.BOOLEAN,
-    defaultValue: true
+    defaultValue: false
   },
   userId: {
     type: DataTypes.INTEGER,

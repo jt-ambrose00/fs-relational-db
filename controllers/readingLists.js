@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken')
 const { Blog, User, ReadingList } = require('../models')
 const { SECRET } = require('../util/config')
 
-const blogFinder = async (req, res, next) => {
-  req.blog = await Blog.findByPk(req.params.id)
-  if (!req.blog) {
+const readingListFinder = async (req, res, next) => {
+  req.readingList = await ReadingList.findByPk(req.params.id)
+  if (!req.readingList) {
     return res.status(404).end()
   }
   next()
@@ -56,6 +56,19 @@ router.post('/', tokenExtractor, async (req, res, next) => {
     }
     const readingList = await ReadingList.create({ blogId, userId })
     res.json(readingList)
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.put('/:id', tokenExtractor, readingListFinder, async (req, res, next) => {
+  try {
+    if (req.decodedToken.id !== req.readingList.userId) {
+      return res.status(403).send({ error: 'you don\'t have permission to do that' })
+    }
+    req.readingList.read = req.body.read
+    await req.readingList.save()
+    res.json(req.readingList)
   } catch (error) {
     next(error)
   }
