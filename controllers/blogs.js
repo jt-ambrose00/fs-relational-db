@@ -2,7 +2,7 @@ const router = require('express').Router()
 const jwt = require('jsonwebtoken')
 const { Op } = require('sequelize')
 
-const { Blog, User } = require('../models')
+const { Blog, User, Session } = require('../models')
 const { SECRET } = require('../util/config')
 
 const blogFinder = async (req, res, next) => {
@@ -13,11 +13,24 @@ const blogFinder = async (req, res, next) => {
   next()
 }
 
-const tokenExtractor = (req, res, next) => {
+const tokenExtractor = async (req, res, next) => {
   const authorization = req.get('authorization')
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
     try {
-      req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
+      const token = authorization.substring(7)
+      req.decodedToken = jwt.verify(token, SECRET)
+
+      const session = await Session.findOne({ 
+        where: { token } 
+      })
+      if (!session) {
+        return res.status(401).json({ error: 'you don\'t have permission to do that' })
+      }
+
+      const user = await User.findByPk(req.decodedToken.id)
+      if (user.disabled) {
+        return res.status(401).json({ error: 'account disabled' })
+      }
     } catch {
       return res.status(401).json({ error: 'token invalid' })
     }
