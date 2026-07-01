@@ -34,10 +34,9 @@ const errorHandler = (error, req, res, next) => {
 
 router.delete('/', tokenExtractor, async (req, res, next) => {
   try {
-    const session = await Session.findOne({ 
-      where: { userId: req.decodedToken.id } 
+    await Session.destroy({
+      where: { userId: req.decodedToken.id }
     })
-    await session.destroy()
     res.status(204).end()
   } catch (error) {
     next(error)

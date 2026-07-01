@@ -53,22 +53,41 @@ const errorHandler = (error, req, res, next) => {
   next(error)
 }
 
-router.post('/', tokenExtractor, async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
     const { blogId, userId } = req.body
+    if (!blogId) {
+      return res.status(400).send({ error: 'blog id must be included' })
+    }
+    if (!userId) {
+      return res.status(400).send({ error: 'user id must be included' })
+    }
+
     const blog = await Blog.findByPk(blogId)
     const user = await User.findByPk(userId)
+
     if (!blog) {
       return res.status(404).send({ error: 'blog not found' })
     }
     if (!user) {
       return res.status(404).send({ error: 'user not found' })
     }
-    if (req.decodedToken.id !== userId) {
-      return res.status(403).send({ error: 'you don\'t have permission to do that' })
+
+    const readingListExists = await ReadingList.findOne({
+      where: { userId, blogId }
+    })
+    if (readingListExists) {
+      return res.status(400).send({ error: 'blog already exists in reading list' })
     }
-    const readingList = await ReadingList.create({ blogId, userId })
-    res.json(readingList)
+
+    const readingList = await (await ReadingList.create({ blogId, userId })).toJSON()
+
+    res.json({
+      id: readingList.id,
+      read: readingList.read,
+      user_id: readingList.userId,
+      blog_id: readingList.blogId
+    })
   } catch (error) {
     next(error)
   }
@@ -77,7 +96,7 @@ router.post('/', tokenExtractor, async (req, res, next) => {
 router.put('/:id', tokenExtractor, readingListFinder, async (req, res, next) => {
   try {
     if (req.decodedToken.id !== req.readingList.userId) {
-      return res.status(403).send({ error: 'you don\'t have permission to do that' })
+      return res.status(401).send({ error: 'you don\'t have permission to do that' })
     }
     req.readingList.read = req.body.read
     await req.readingList.save()
